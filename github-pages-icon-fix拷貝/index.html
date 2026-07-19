@@ -1,0 +1,1464 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#fff2f7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="飲料記錄">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <title>每日飲料記錄器</title>
+  <script>
+    try {
+      document.documentElement.dataset.theme = localStorage.getItem("dailyDrinkRecorder.theme.v1") === "blue" ? "blue" : "pink";
+    } catch {
+      document.documentElement.dataset.theme = "pink";
+    }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #fff8f1;
+      --card: rgba(255, 255, 255, 0.9);
+      --ink: #2f2633;
+      --muted: #766875;
+      --line: #f3d7de;
+      --brand: #ff7aa7;
+      --brand-2: #0b8f73;
+      --accent: #9b7cff;
+      --cream: #fff3bf;
+      --mint: #dff8ed;
+      --danger: #e05a72;
+      --good: #17a36d;
+      --warn: #d48a1f;
+      --shadow: 0 18px 48px rgba(154, 100, 132, 0.18);
+      --glow-1: rgba(255, 202, 224, 0.9);
+      --glow-2: #fff0a8;
+      --glow-3: rgba(210, 247, 236, 0.95);
+      --button-gradient: linear-gradient(135deg, #ff7aa7 0%, #ff9f7a 100%);
+      --active-tab: linear-gradient(135deg, #fff 0%, #fff6fb 100%);
+      --focus-ring: rgba(255, 122, 167, 0.16);
+      --chart: #ff7aa7;
+      --chart-soft: rgba(255, 122, 167, 0.13);
+      --hero-shadow: 0 3px 0 rgba(255, 255, 255, 0.78), 0 12px 24px rgba(255, 122, 167, 0.16);
+      --brand-shadow: rgba(255, 122, 167, 0.22);
+      --cream-soft: rgba(255, 243, 191, 0.7);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Noto Sans TC", "PingFang TC", sans-serif;
+    }
+
+    html[data-theme="blue"] {
+      --bg: #f3fbff;
+      --card: rgba(255, 255, 255, 0.92);
+      --ink: #223142;
+      --muted: #607386;
+      --line: #cfe7f5;
+      --brand: #5bb7ff;
+      --brand-2: #167f9f;
+      --accent: #7a9cff;
+      --cream: #fff3bf;
+      --mint: #e2f8ff;
+      --shadow: 0 18px 48px rgba(82, 145, 186, 0.18);
+      --glow-1: rgba(198, 235, 255, 0.92);
+      --glow-2: #e5f4ff;
+      --glow-3: rgba(214, 246, 255, 0.95);
+      --button-gradient: linear-gradient(135deg, #55b9ff 0%, #80d7ff 100%);
+      --active-tab: linear-gradient(135deg, #fff 0%, #f1fbff 100%);
+      --focus-ring: rgba(85, 185, 255, 0.18);
+      --chart: #4aaee8;
+      --chart-soft: rgba(74, 174, 232, 0.14);
+      --hero-shadow: 0 3px 0 rgba(255, 255, 255, 0.86), 0 12px 24px rgba(85, 185, 255, 0.18);
+      --brand-shadow: rgba(85, 185, 255, 0.22);
+      --cream-soft: rgba(229, 244, 255, 0.72);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, var(--glow-1) 0, transparent 30%),
+        radial-gradient(circle at 92% 9%, var(--glow-2) 0, transparent 27%),
+        radial-gradient(circle at 80% 78%, var(--glow-3) 0, transparent 30%),
+        var(--bg);
+      min-height: 100svh;
+      overflow-x: hidden;
+      transition: background 260ms ease, color 220ms ease;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      width: 210px;
+      height: 210px;
+      border-radius: 42% 58% 64% 36%;
+      opacity: 0.45;
+      filter: blur(1px);
+    }
+
+    body::before {
+      top: 96px;
+      left: -96px;
+      background: radial-gradient(circle, #ffd2e2 0 18%, transparent 19%), radial-gradient(circle at 70% 30%, #ffe9a8 0 16%, transparent 17%), rgba(255, 255, 255, 0.42);
+      transform: rotate(-14deg);
+    }
+
+    body::after {
+      right: -110px;
+      bottom: 80px;
+      background: radial-gradient(circle, #c9f5e7 0 20%, transparent 21%), radial-gradient(circle at 30% 70%, #e1d7ff 0 16%, transparent 17%), rgba(255, 255, 255, 0.42);
+      transform: rotate(18deg);
+    }
+
+    .app {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
+      position: relative;
+      z-index: 1;
+    }
+
+    .drink-wallpaper {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-drink {
+      position: absolute;
+      width: clamp(86px, 18vw, 148px);
+      color: var(--brand);
+      opacity: 0.24;
+      filter: saturate(0.9);
+      transform-origin: center;
+      animation: stickerIn 520ms cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .bg-drink svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 16px 24px rgba(116, 95, 121, 0.08));
+    }
+
+    .drink-1 { top: 92px; right: 8%; transform: rotate(9deg); animation-delay: 40ms; --drink-opacity: 0.25; }
+    .drink-2 { top: 46%; left: -18px; transform: rotate(-11deg); animation-delay: 110ms; --drink-opacity: 0.19; }
+    .drink-3 { right: -20px; bottom: 18%; transform: rotate(12deg); animation-delay: 180ms; --drink-opacity: 0.21; }
+    .drink-4 { left: 8%; bottom: 4%; transform: rotate(-7deg); animation-delay: 250ms; --drink-opacity: 0.16; }
+
+    header {
+      display: grid;
+      gap: 8px;
+      padding: 14px 2px 20px;
+      position: relative;
+      padding-right: 118px;
+      animation: fadeUp 340ms ease both;
+    }
+
+    .eyebrow {
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 9vw, 52px);
+      line-height: 1.02;
+      letter-spacing: -0.055em;
+      color: #26312f;
+      text-shadow: var(--hero-shadow);
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: max(12px, env(safe-area-inset-top));
+      right: 2px;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      box-shadow: 0 10px 22px rgba(154, 100, 132, 0.12);
+      backdrop-filter: blur(14px);
+      font-size: 13px;
+    }
+
+    .theme-toggle .theme-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      display: inline-block;
+      background: linear-gradient(135deg, #ff7aa7, #ffe0ec);
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 0 1px rgba(255, 122, 167, 0.32);
+    }
+
+    html[data-theme="blue"] .theme-toggle .theme-dot {
+      background: linear-gradient(135deg, #55b9ff, #dff6ff);
+      box-shadow: 0 0 0 1px rgba(85, 185, 255, 0.36);
+    }
+
+    .hero-message {
+      margin: 2px 0 4px;
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+      font-size: clamp(15px, 4vw, 18px);
+    }
+
+    .kawaii-stickers {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .kawaii-stickers span {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(255, 206, 220, 0.95);
+      box-shadow: 0 8px 18px rgba(154, 100, 132, 0.12);
+      font-size: 18px;
+      animation: popIn 420ms cubic-bezier(.2, .9, .2, 1.2) both;
+    }
+
+    .kawaii-stickers span:nth-child(2) { animation-delay: 60ms; }
+    .kawaii-stickers span:nth-child(3) { animation-delay: 120ms; }
+    .kawaii-stickers span:nth-child(4) { animation-delay: 180ms; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(16px);
+      margin: 14px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -58px;
+      right: -58px;
+      width: 128px;
+      height: 128px;
+      border-radius: 44% 56% 45% 55%;
+      background: var(--cream-soft);
+      z-index: -1;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 6px 0 14px;
+      padding: 5px;
+      background: rgba(255, 255, 255, 0.54);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      position: sticky;
+      top: max(8px, env(safe-area-inset-top));
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(154, 100, 132, 0.12);
+      backdrop-filter: blur(14px);
+    }
+
+    .tab {
+      border: 0;
+      border-radius: 19px;
+      padding: 11px 8px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 15px;
+      transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .tab.active {
+      background: var(--active-tab);
+      color: var(--brand-2);
+      box-shadow: 0 10px 22px var(--brand-shadow);
+    }
+
+    .tab:active, button:active {
+      transform: scale(0.98);
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    form {
+      display: grid;
+      gap: 13px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      font: inherit;
+      font-size: 17px;
+      padding: 14px 14px;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    input:focus, select:focus {
+      background: #fff;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px var(--focus-ring), 0 8px 22px rgba(154, 100, 132, 0.10);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button, .button-like {
+      border: 0;
+      border-radius: 22px;
+      padding: 13px 16px;
+      background: var(--button-gradient);
+      color: #fff;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 48px;
+      box-shadow: 0 12px 24px rgba(255, 122, 167, 0.26);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    button:hover, .button-like:hover {
+      filter: brightness(1.02);
+      box-shadow: 0 16px 28px var(--brand-shadow);
+    }
+
+    button.secondary, .button-like.secondary {
+      background: #fff7fb;
+      color: var(--brand-2);
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 18px rgba(154, 100, 132, 0.10);
+    }
+
+    button.ghost {
+      background: rgba(255, 255, 255, 0.62);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    button.danger {
+      background: #fff1f1;
+      color: #b73535;
+      border: 1px solid #ffd4d4;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 20px;
+      background: #fff7dd;
+      color: #7d5710;
+      line-height: 1.55;
+      display: none;
+      border: 1px solid #ffe8a3;
+    }
+
+    .status.show { display: block; }
+    .status.error { background: #fff1f1; color: #9d2f2f; }
+    .status.warn { background: #fff7e6; color: #895411; }
+
+    .result {
+      display: none;
+      margin-top: 14px;
+    }
+
+    .result.show { display: block; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 13px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #fff 0%, #fffaf3 100%);
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 18px rgba(154, 100, 132, 0.08);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .metric strong {
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .chart-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 14px 0 10px;
+    }
+
+    @media (max-width: 560px) {
+      .chart-controls { grid-template-columns: 1fr; }
+    }
+
+    .chart-wrap {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      padding: 14px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .secure-settings {
+      display: grid;
+      gap: 14px;
+    }
+
+    .secure-settings[hidden] {
+      display: none;
+    }
+
+    .secure-note {
+      padding: 14px 16px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #fff0f7 0%, var(--mint) 100%);
+      color: #0b7758;
+      line-height: 1.6;
+      font-weight: 800;
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+    }
+
+    .secure-note::before {
+      content: "🌼";
+      margin-right: 8px;
+    }
+
+    .trend-chart {
+      width: 100%;
+      min-height: 230px;
+      display: block;
+    }
+
+    .chart-axis {
+      stroke: #cfe4dc;
+      stroke-width: 1;
+    }
+
+    .chart-grid {
+      stroke: #e7f2ee;
+      stroke-width: 1;
+    }
+
+    .chart-line {
+      fill: none;
+      stroke: var(--chart);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .chart-fill {
+      fill: var(--chart-soft);
+    }
+
+    .chart-dot {
+      fill: #fff;
+      stroke: var(--chart);
+      stroke-width: 3;
+    }
+
+    .chart-label {
+      fill: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .impact-list, .history-list, .source-list {
+      display: grid;
+      gap: 10px;
+      padding: 0;
+      margin: 14px 0 0;
+      list-style: none;
+    }
+
+    .impact, .history-item, .source-item {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 13px;
+      line-height: 1.55;
+      box-shadow: 0 8px 18px rgba(154, 100, 132, 0.07);
+    }
+
+    .impact-head, .history-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 5px;
+    }
+
+    .score {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-weight: 900;
+      white-space: nowrap;
+      background: #eef2f0;
+      color: var(--muted);
+    }
+
+    .score.good { background: #e6f8ef; color: var(--good); }
+    .score.bad { background: #fff0f0; color: var(--danger); }
+    .score.warn { background: #fff7e6; color: var(--warn); }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    iframe {
+      width: 100%;
+      height: 620px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #fff;
+      margin-top: 12px;
+    }
+
+    .candidate-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .candidate {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .tiny {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.92); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes stickerIn {
+      from { opacity: 0; translate: 0 14px; scale: 0.96; }
+      to { opacity: var(--drink-opacity, 0.24); translate: 0 0; scale: 1; }
+    }
+
+    @media (max-width: 560px) {
+      header {
+        padding-right: 0;
+        padding-top: 64px;
+      }
+
+      .theme-toggle {
+        left: 0;
+        right: auto;
+      }
+
+      .bg-drink {
+        opacity: 0.16;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="drink-wallpaper" aria-hidden="true">
+    <div class="bg-drink drink-1">
+      <svg viewBox="0 0 120 150" role="img" aria-label="">
+        <path d="M35 42h54l-8 87a14 14 0 0 1-14 13H57a14 14 0 0 1-14-13z" fill="currentColor"/>
+        <path d="M40 54h44l-5 54H45z" fill="#fff" opacity=".62"/>
+        <path d="M48 9h12l11 36H59z" fill="currentColor" opacity=".7"/>
+        <path d="M27 37h70a6 6 0 0 1 0 12H27a6 6 0 0 1 0-12z" fill="#fff" opacity=".78"/>
+        <circle cx="53" cy="116" r="5" fill="#5d4a5d" opacity=".35"/>
+        <circle cx="66" cy="125" r="5" fill="#5d4a5d" opacity=".35"/>
+        <circle cx="61" cy="108" r="5" fill="#5d4a5d" opacity=".35"/>
+      </svg>
+    </div>
+    <div class="bg-drink drink-2">
+      <svg viewBox="0 0 120 150" role="img" aria-label="">
+        <path d="M39 35h42l5 92a15 15 0 0 1-15 16H49a15 15 0 0 1-15-16z" fill="currentColor"/>
+        <path d="M44 51h33l3 61H41z" fill="#fff" opacity=".58"/>
+        <path d="M49 17h22v22H49z" fill="currentColor" opacity=".76"/>
+        <path d="M45 12h30a4 4 0 0 1 4 4v3H41v-3a4 4 0 0 1 4-4z" fill="#fff" opacity=".72"/>
+        <path d="M45 78c9-8 22-8 32 0v17c-10-8-23-8-32 0z" fill="#fff" opacity=".5"/>
+      </svg>
+    </div>
+    <div class="bg-drink drink-3">
+      <svg viewBox="0 0 120 150" role="img" aria-label="">
+        <path d="M26 45h68l-7 74a24 24 0 0 1-24 22h-6a24 24 0 0 1-24-22z" fill="currentColor"/>
+        <path d="M34 63h52l-4 41H38z" fill="#fff" opacity=".58"/>
+        <path d="M42 77c12 10 26 10 39 0l-2 23c-12 8-25 8-39 0z" fill="#fff" opacity=".5"/>
+        <path d="M71 11h9L67 54h-9z" fill="currentColor" opacity=".72"/>
+        <path d="M23 39h74a6 6 0 0 1 0 12H23a6 6 0 0 1 0-12z" fill="#fff" opacity=".74"/>
+      </svg>
+    </div>
+    <div class="bg-drink drink-4">
+      <svg viewBox="0 0 120 150" role="img" aria-label="">
+        <path d="M28 40h64v87a15 15 0 0 1-15 15H43a15 15 0 0 1-15-15z" fill="currentColor"/>
+        <path d="M37 52h46v30H37z" fill="#fff" opacity=".58"/>
+        <path d="M37 95h46v28H37z" fill="#fff" opacity=".42"/>
+        <path d="M41 21h38l13 19H28z" fill="currentColor" opacity=".68"/>
+        <path d="M52 66h17" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+      </svg>
+    </div>
+  </div>
+  <main class="app">
+    <header>
+      <div class="eyebrow">Daily Drink Recorder</div>
+      <h1>每日飲料記錄器</h1>
+      <button class="theme-toggle" type="button" id="themeToggle" aria-label="切換成淺藍色系">
+        <span class="theme-dot" aria-hidden="true"></span>
+        <span id="themeLabel">粉色</span>
+      </button>
+      <p class="hero-message">Jason關心您的健康少喝飲料多喝水</p>
+      <div class="kawaii-stickers" aria-hidden="true">
+        <span>🌸</span>
+        <span>🧋</span>
+        <span>💧</span>
+        <span>✨</span>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="主要功能">
+      <button class="tab active" type="button" data-tab="record">記錄</button>
+      <button class="tab" type="button" data-tab="history">歷史</button>
+      <button class="tab" type="button" data-tab="settings">資料</button>
+    </nav>
+
+    <section class="view active" id="recordView">
+      <div class="card">
+        <div class="secure-note">請輸入今天喝的飲料</div>
+        <form id="drinkForm">
+          <label>
+            飲料名稱
+            <input id="name" name="name" autocomplete="off" list="drinkHistoryOptions" required>
+            <datalist id="drinkHistoryOptions"></datalist>
+          </label>
+          <div class="grid-2">
+            <label>
+              品牌，可留空
+              <input id="brand" name="brand" autocomplete="organization">
+            </label>
+            <label>
+              容量 ml
+              <input id="servingMl" name="servingMl" inputmode="decimal" type="number" min="30" max="5000" value="500">
+            </label>
+          </div>
+          <div class="grid-2">
+            <label>
+              甜度
+              <select id="sweetness" name="sweetness">
+                <option value="未指定">未指定</option>
+                <option>無糖</option>
+                <option selected>微糖</option>
+                <option>半糖</option>
+                <option>全糖</option>
+              </select>
+            </label>
+            <label>
+              冰量
+              <select id="ice" name="ice">
+                <option value="未指定">未指定</option>
+                <option>去冰</option>
+                <option selected>微冰</option>
+                <option>少冰</option>
+                <option>正常冰</option>
+                <option>熱飲</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            實付價格 NT$，不知道可留空
+            <input id="paidPrice" name="paidPrice" inputmode="decimal" type="number" min="0" max="100000">
+          </label>
+          <div class="button-row">
+            <button id="submitButton" type="submit">記錄</button>
+          </div>
+        </form>
+        <div class="status" id="statusBox" role="status"></div>
+      </div>
+
+      <div class="card result" id="resultBox">
+        <h2 id="resultTitle">已記錄</h2>
+        <p class="muted" id="resultMeta"></p>
+        <div class="summary" id="summaryGrid"></div>
+        <h3>營養與身體影響</h3>
+        <ul class="impact-list" id="impactList"></ul>
+        <div class="button-row" style="margin-top:14px">
+          <button class="secondary" type="button" id="downloadLatestReport">下載這筆 HTML 紀錄</button>
+          <button class="ghost" type="button" id="showReportButton">顯示／收合紀錄</button>
+        </div>
+        <iframe id="reportFrame" title="飲料紀錄" hidden></iframe>
+      </div>
+    </section>
+
+    <section class="view" id="historyView">
+      <div class="card">
+        <h2>歷史紀錄</h2>
+        <p class="muted">紀錄只保存在本裝置，不會上傳。若更換裝置，請先下載 CSV 備份。</p>
+        <div class="chart-controls">
+          <label>
+            統計方式
+            <select id="trendPeriod">
+              <option value="daily">每日</option>
+              <option value="weekly">每週</option>
+              <option value="monthly">每月</option>
+            </select>
+          </label>
+          <label>
+            追蹤指標
+            <select id="trendMetric">
+              <option value="drinks">飲料杯數</option>
+            </select>
+          </label>
+        </div>
+        <div class="summary" id="trendSummary"></div>
+        <div class="chart-wrap">
+          <svg class="trend-chart" id="trendChart" viewBox="0 0 680 260" role="img" aria-label="飲料攝取趨勢折線圖"></svg>
+        </div>
+        <p class="muted" id="trendNote"></p>
+        <div class="button-row">
+          <button type="button" id="downloadCsv">下載 CSV</button>
+          <button class="secondary" type="button" id="openLatestReport">開啟最近紀錄</button>
+          <button class="danger" type="button" id="clearHistory">清除本機紀錄</button>
+        </div>
+        <ul class="history-list" id="historyList"></ul>
+      </div>
+    </section>
+
+    <section class="view" id="settingsView">
+      <div class="card">
+        <h2>資料安全</h2>
+        <div class="secure-note">目前是本機資料版：飲料名稱、品牌、容量、價格和歷史統計都只存在這台手機，不會上傳到任何後端。</div>
+        <div class="button-row">
+          <button type="button" id="downloadCsvSettings">下載 CSV 備份</button>
+          <button class="danger" type="button" id="clearHistorySettings">清除本機紀錄</button>
+        </div>
+        <div class="status" id="settingsStatus" role="status"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "dailyDrinkRecorder.records.v1";
+    const THEME_KEY = "dailyDrinkRecorder.theme.v1";
+    const MAX_RECORDS = 120;
+
+    const organLabels = {
+      eyes: "眼睛",
+      brain: "腦／神經",
+      teeth: "牙齒",
+      heart: "心血管",
+      stomach: "胃",
+      liver: "肝／代謝",
+      kidneys: "腎臟",
+      bones: "骨骼",
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const state = {
+      lastRequest: null,
+      latest: null,
+    };
+
+    applyTheme(document.documentElement.dataset.theme || loadTheme());
+    renderHistory();
+    renderDrinkHistoryOptions();
+
+    document.querySelectorAll(".tab").forEach((button) => {
+      button.addEventListener("click", () => switchTab(button.dataset.tab));
+    });
+
+    $("themeToggle").addEventListener("click", () => {
+      const nextTheme = (document.documentElement.dataset.theme || "pink") === "blue" ? "pink" : "blue";
+      applyTheme(nextTheme);
+      try { localStorage.setItem(THEME_KEY, nextTheme); } catch {}
+    });
+
+    $("name").addEventListener("input", () => {
+      applyHistorySuggestion($("name").value.trim());
+    });
+
+    $("drinkForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitDrink();
+    });
+
+    $("downloadCsv").addEventListener("click", downloadCsv);
+    $("downloadCsvSettings").addEventListener("click", downloadCsv);
+    $("openLatestReport").addEventListener("click", () => {
+      const records = loadRecords();
+      if (!records.length) return alert("尚未有任何紀錄。");
+      showReport(records[0].reportHtml);
+      switchTab("record");
+    });
+    $("clearHistory").addEventListener("click", clearLocalHistory);
+    $("clearHistorySettings").addEventListener("click", clearLocalHistory);
+    $("downloadLatestReport").addEventListener("click", () => {
+      const html = state.latest?.reportHtml;
+      if (!html) return alert("目前沒有可下載的報告。");
+      downloadText(html, `drink-report-${state.latest.recordId}.html`, "text/html;charset=utf-8");
+    });
+    $("showReportButton").addEventListener("click", () => {
+      const frame = $("reportFrame");
+      frame.hidden = !frame.hidden;
+      if (!frame.hidden && state.latest?.reportHtml) frame.srcdoc = state.latest.reportHtml;
+    });
+    ["trendPeriod", "trendMetric"].forEach((id) => {
+      $(id).addEventListener("change", renderTrendReport);
+    });
+
+    function submitDrink() {
+      const payload = buildPayload();
+      if (!payload.name) {
+        showStatus("請先輸入飲料名稱。", "warn");
+        return;
+      }
+      state.lastRequest = payload;
+      setLoading(true);
+      const result = makeLocalResult(payload);
+      saveResult(result);
+      renderResult(result);
+      showStatus("已記錄到這台手機；沒有上傳任何資料。");
+      setLoading(false);
+    }
+
+    function buildPayload() {
+      return {
+        recordId: makeRecordId(),
+        name: $("name").value.trim(),
+        brand: $("brand").value.trim(),
+        servingMl: Number($("servingMl").value || 500),
+        sweetness: $("sweetness").value,
+        ice: $("ice").value,
+        paidPrice: Number($("paidPrice").value || 0),
+        locale: "zh-TW",
+      };
+    }
+
+    function makeRecordId() {
+      if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+      return `local-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function makeLocalResult(payload) {
+      const generatedAt = new Date().toISOString();
+      const nutrition = {
+        energyKcal: null,
+        sugarG: null,
+        caffeineMg: null,
+        proteinG: null,
+        fatG: null,
+        carbsG: null,
+        sodiumMg: null,
+        calciumMg: null,
+        vitaminAUg: null,
+        betaCaroteneUg: null,
+        acidic: null,
+        carbonated: null,
+      };
+      const impacts = Object.entries(organLabels).map(([organ, label]) => ({
+        organ,
+        label,
+        score: null,
+        tone: "unknown",
+        reason: "搜尋功能已暫停；這筆只作本機杯數統計，暫不評分。",
+        evidence: null,
+        ruleIds: [],
+      }));
+      const price = payload.paidPrice > 0
+        ? { amount: payload.paidPrice, min: payload.paidPrice, max: payload.paidPrice, currency: "TWD", type: "paid" }
+        : { amount: null, min: null, max: null, currency: "TWD", type: "unknown" };
+      const result = {
+        status: "ready",
+        recordId: payload.recordId,
+        originalName: payload.name,
+        matchedName: payload.name,
+        brand: payload.brand || null,
+        servingMl: payload.servingMl,
+        sweetness: payload.sweetness || null,
+        ice: payload.ice || null,
+        nutrition,
+        price,
+        confidence: "low",
+        dataLabel: "本機記錄",
+        sources: [],
+        impacts,
+        ruleVersion: "local-only-v1",
+        generatedAt,
+        fallbackMessage: "本機資料版未啟用網路搜尋。",
+      };
+      result.csvHeader = makeCsvHeader();
+      result.csvRow = makeCsvRow(result);
+      result.reportHtml = renderLocalReport(result);
+      return result;
+    }
+
+    function makeCsvHeader() {
+      return [
+        "record_id", "recorded_at", "original_name", "matched_name", "brand", "serving_ml", "sweetness",
+        "energy_kcal", "sugar_g", "caffeine_mg", "protein_g", "fat_g", "carbs_g", "sodium_mg",
+        "price_twd", "price_type", "confidence", "organ_impacts_json", "source_urls",
+      ].join(",");
+    }
+
+    function makeCsvRow(result) {
+      const n = result.nutrition;
+      return [
+        result.recordId,
+        result.generatedAt,
+        result.originalName,
+        result.matchedName,
+        result.brand,
+        result.servingMl,
+        result.sweetness,
+        n.energyKcal,
+        n.sugarG,
+        n.caffeineMg,
+        n.proteinG,
+        n.fatG,
+        n.carbsG,
+        n.sodiumMg,
+        result.price.amount,
+        result.price.type,
+        result.confidence,
+        result.impacts.map(({ organ, score, tone, evidence, ruleIds }) => ({ organ, score, tone, evidence, ruleIds })),
+        result.sources.map((source) => source.url).join(" | "),
+      ].map(csvEscape).join(",");
+    }
+
+    function csvEscape(value) {
+      if (value === null || value === undefined) return "";
+      const text = typeof value === "string" ? value : JSON.stringify(value);
+      return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+    }
+
+    function renderLocalReport(result) {
+      const rows = [
+        ["飲料", result.matchedName],
+        ["品牌", result.brand || "未填"],
+        ["容量", `${result.servingMl} ml`],
+        ["甜度", result.sweetness || "未指定"],
+        ["冰量", result.ice || "未指定"],
+        ["價格", priceText(result.price)],
+        ["資料狀態", "本機記錄，不連網查詢"],
+      ].map(([label, text]) => `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(text)}</strong></div>`).join("");
+      const impacts = result.impacts.map((impact) => `<li><strong>${escapeHtml(impact.label)}</strong>：資料不足｜${escapeHtml(impact.reason)}</li>`).join("");
+      return `<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${escapeHtml(result.matchedName)}｜飲料紀錄</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;margin:0;background:#f3fbf7;color:#14342d;padding:24px;line-height:1.65}
+    main{max-width:760px;margin:auto}
+    h1{font-size:36px;letter-spacing:-.04em}
+    .card{background:#fff;border:1px solid #d8ebe3;border-radius:22px;padding:18px;margin:14px 0}
+    .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+    .metric{background:#f8fffb;border:1px solid #d8ebe3;border-radius:16px;padding:12px}
+    .metric span{display:block;color:#60746d;font-size:12px;font-weight:800}
+    .metric strong{font-size:18px}
+    .warn{background:#fff7e6;border-color:#ffe0a3}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>${escapeHtml(result.matchedName)}</h1>
+    <p>紀錄時間：${escapeHtml(new Date(result.generatedAt).toLocaleString("zh-TW"))}</p>
+    <section class="card warn">本機資料版沒有啟用網路搜尋；這筆紀錄只保存在這台裝置，用於杯數統計。</section>
+    <section class="card"><div class="summary">${rows}</div></section>
+    <section class="card"><h2>身體部位影響</h2><ul>${impacts}</ul></section>
+    <section class="card">本報告為一般成人的遊戲化參考，不構成診斷或醫療建議。</section>
+  </main>
+</body>
+</html>`;
+    }
+
+    function renderResult(data) {
+      state.latest = data;
+      $("resultBox").classList.add("show");
+      $("resultTitle").textContent = data.matchedName || "已記錄";
+      $("resultMeta").textContent = `本機記錄｜${new Date(data.generatedAt).toLocaleString("zh-TW")}｜不會上傳`;
+      $("summaryGrid").innerHTML = [
+        ["品牌", data.brand || "未填"],
+        ["容量", `${data.servingMl ?? "—"} ml`],
+        ["甜度", data.sweetness || "未指定"],
+        ["冰量", data.ice || "未指定"],
+        ["價格", priceText(data.price)],
+        ["資料狀態", "只做杯數統計"],
+      ].map(([label, val]) => `<div class="metric"><span>${label}</span><strong>${val}</strong></div>`).join("");
+
+      $("impactList").innerHTML = (data.impacts || []).map((impact) => {
+        const scoreClass = impact.score === null ? "warn" : impact.score > 0 ? "good" : impact.score < 0 ? "bad" : "";
+        const scoreText = impact.score === null ? "資料不足" : `${impact.score > 0 ? "+" : ""}${impact.score}`;
+        return `<li class="impact">
+          <div class="impact-head"><strong>${escapeHtml(impact.label || organLabels[impact.organ] || impact.organ)}</strong><span class="score ${scoreClass}">${scoreText}</span></div>
+          <div class="muted">${escapeHtml(impact.reason || "")}</div>
+        </li>`;
+      }).join("");
+
+      $("reportFrame").hidden = true;
+      $("reportFrame").srcdoc = data.reportHtml || "";
+      renderHistory();
+      $("resultBox").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function saveResult(data) {
+      const records = loadRecords();
+      if (!records.some((item) => item.recordId === data.recordId)) {
+        records.unshift({
+          recordId: data.recordId,
+          generatedAt: data.generatedAt,
+          originalName: data.originalName,
+          matchedName: data.matchedName,
+          csvHeader: data.csvHeader,
+          csvRow: data.csvRow,
+          reportHtml: data.reportHtml,
+          confidence: data.confidence,
+          priceText: priceText(data.price),
+          brand: data.brand || "",
+          servingMl: data.servingMl || "",
+          sweetness: data.sweetness || "",
+          ice: data.ice || "",
+          paidPrice: data.price?.type === "paid" ? data.price.amount : "",
+          nutrition: data.nutrition || null,
+          impacts: data.impacts || [],
+        });
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records.slice(0, MAX_RECORDS)));
+      renderDrinkHistoryOptions();
+      renderTrendReport();
+    }
+
+    function renderDrinkHistoryOptions() {
+      const options = new Map();
+      loadRecords().forEach((record) => {
+        const name = record.matchedName || record.originalName;
+        if (!name || options.has(name)) return;
+        options.set(name, record);
+      });
+      $("drinkHistoryOptions").innerHTML = [...options.keys()]
+        .map((name) => `<option value="${escapeHtml(name)}"></option>`)
+        .join("");
+    }
+
+    function applyHistorySuggestion(name) {
+      if (!name) return;
+      const record = loadRecords().find((item) => (item.matchedName || item.originalName) === name);
+      if (!record) return;
+      if (record.brand !== undefined) $("brand").value = record.brand || "";
+      if (record.servingMl) $("servingMl").value = record.servingMl;
+      if (record.sweetness && [...$("sweetness").options].some((option) => option.value === record.sweetness)) $("sweetness").value = record.sweetness;
+      if (record.ice && [...$("ice").options].some((option) => option.value === record.ice)) $("ice").value = record.ice;
+      if (record.paidPrice !== undefined && record.paidPrice !== null) $("paidPrice").value = record.paidPrice || "";
+    }
+
+    function renderHistory() {
+      const list = $("historyList");
+      const records = loadRecords();
+      renderTrendReport(records);
+      if (!records.length) {
+        list.innerHTML = `<li class="history-item muted">尚未有紀錄。先去「記錄」頁新增一杯飲料。</li>`;
+        return;
+      }
+      list.innerHTML = records.map((record) => `
+        <li class="history-item">
+          <div class="history-head">
+            <strong>${escapeHtml(record.matchedName || record.originalName)}</strong>
+            <span class="score">${escapeHtml(record.priceText || "")}</span>
+          </div>
+          <div class="muted">${new Date(record.generatedAt).toLocaleString("zh-TW")}｜${escapeHtml(record.confidence === "low" ? "本機記錄" : `可信度：${confidenceLabel(record.confidence)}`)}</div>
+          <div class="button-row" style="margin-top:10px">
+            <button class="secondary" type="button" data-report-id="${record.recordId}">看紀錄</button>
+            <button class="ghost" type="button" data-download-id="${record.recordId}">下載 HTML</button>
+          </div>
+        </li>`).join("");
+      list.querySelectorAll("[data-report-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const record = loadRecords().find((item) => item.recordId === button.dataset.reportId);
+          if (!record) return;
+          state.latest = record;
+          showReport(record.reportHtml);
+          switchTab("record");
+        });
+      });
+      list.querySelectorAll("[data-download-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const record = loadRecords().find((item) => item.recordId === button.dataset.downloadId);
+          if (!record) return;
+          downloadText(record.reportHtml, `drink-report-${record.recordId}.html`, "text/html;charset=utf-8");
+        });
+      });
+    }
+
+    function renderTrendReport(records = loadRecords()) {
+      const period = $("trendPeriod").value;
+      const metric = $("trendMetric").value;
+      const buckets = makeTrendBuckets(period);
+      const bucketMap = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+      records.forEach((record) => {
+        const date = new Date(record.generatedAt);
+        if (Number.isNaN(date.getTime())) return;
+        const key = trendKey(date, period);
+        const bucket = bucketMap.get(key);
+        if (!bucket) return;
+        const value = trendValue(record, metric);
+        bucket.cups += 1;
+        bucket.value += value;
+        bucket.samples += 1;
+      });
+
+      const label = trendMetricLabel(metric);
+      const values = buckets.map((bucket) => bucket.value);
+      const total = values.reduce((sum, value) => sum + value, 0);
+      const activePeriods = buckets.filter((bucket) => bucket.cups > 0).length;
+      const maxBucket = buckets.reduce((best, bucket) => bucket.value > best.value ? bucket : best, buckets[0]);
+      $("trendSummary").innerHTML = [
+        ["總計", `${formatTrendNumber(total)} ${label.unit}`.trim()],
+        [`${periodLabel(period)}均`, `${formatTrendNumber(activePeriods ? total / activePeriods : 0)} ${label.unit}`.trim()],
+        ["最高", `${escapeHtml(maxBucket?.label || "—")}：${formatTrendNumber(maxBucket?.value || 0)} ${label.unit}`.trim()],
+        ["期間", trendRangeLabel(period)],
+      ].map(([title, text]) => `<div class="metric"><span>${title}</span><strong>${escapeHtml(text)}</strong></div>`).join("");
+
+      drawTrendChart(buckets, label);
+      $("trendNote").textContent = `目前圖表：${periodLabel(period)} ${label.name}。所有統計都只讀取這台手機的本機紀錄。`;
+    }
+
+    function makeTrendBuckets(period) {
+      const count = period === "monthly" ? 12 : period === "weekly" ? 8 : 14;
+      const today = startOfDay(new Date());
+      const end = period === "monthly" ? startOfMonth(today) : period === "weekly" ? startOfWeek(today) : today;
+      return Array.from({ length: count }, (_, index) => {
+        const date = new Date(end);
+        if (period === "monthly") {
+          date.setMonth(end.getMonth() - (count - 1 - index));
+        } else {
+          date.setDate(end.getDate() - (count - 1 - index) * (period === "weekly" ? 7 : 1));
+        }
+        return {
+          key: trendKey(date, period),
+          label: trendBucketLabel(date, period),
+          value: 0,
+          cups: 0,
+          samples: 0,
+        };
+      });
+    }
+
+    function trendValue(record, metric) {
+      if (metric === "drinks") return 1;
+      return 0;
+    }
+
+    function trendMetricLabel(metric) {
+      const labels = {
+        drinks: { name: "飲料杯數", unit: "杯" },
+      };
+      return labels[metric] || labels.drinks;
+    }
+
+    function drawTrendChart(buckets, label) {
+      const svg = $("trendChart");
+      const width = 680, height = 260;
+      const padding = { top: 22, right: 24, bottom: 42, left: 54 };
+      const values = buckets.map((bucket) => bucket.value);
+      let min = Math.min(0, ...values);
+      let max = Math.max(0, ...values);
+      if (min === max) max = min + 1;
+      const plotW = width - padding.left - padding.right;
+      const plotH = height - padding.top - padding.bottom;
+      const x = (index) => padding.left + (buckets.length === 1 ? plotW / 2 : (index / (buckets.length - 1)) * plotW);
+      const y = (value) => padding.top + ((max - value) / (max - min)) * plotH;
+      const points = buckets.map((bucket, index) => `${x(index)},${y(bucket.value)}`);
+      const area = `${padding.left},${y(0)} ${points.join(" ")} ${padding.left + plotW},${y(0)}`;
+      const labelIndexes = [...new Set([0, Math.floor((buckets.length - 1) / 2), buckets.length - 1])];
+      const gridValues = [min, (min + max) / 2, max];
+
+      svg.innerHTML = `
+        ${gridValues.map((value) => `<line class="chart-grid" x1="${padding.left}" y1="${y(value)}" x2="${padding.left + plotW}" y2="${y(value)}"></line><text class="chart-label" x="8" y="${y(value) + 4}">${escapeHtml(formatTrendNumber(value))}</text>`).join("")}
+        <line class="chart-axis" x1="${padding.left}" y1="${padding.top + plotH}" x2="${padding.left + plotW}" y2="${padding.top + plotH}"></line>
+        <polygon class="chart-fill" points="${area}"></polygon>
+        <polyline class="chart-line" points="${points.join(" ")}"></polyline>
+        ${buckets.map((bucket, index) => `<circle class="chart-dot" cx="${x(index)}" cy="${y(bucket.value)}" r="5"><title>${escapeHtml(bucket.label)}：${escapeHtml(formatTrendNumber(bucket.value))} ${escapeHtml(label.unit)}</title></circle>`).join("")}
+        ${labelIndexes.map((index) => `<text class="chart-label" text-anchor="${index === 0 ? "start" : index === buckets.length - 1 ? "end" : "middle"}" x="${x(index)}" y="${height - 12}">${escapeHtml(buckets[index].label)}</text>`).join("")}
+      `;
+    }
+
+    function startOfDay(date) {
+      const copy = new Date(date);
+      copy.setHours(0, 0, 0, 0);
+      return copy;
+    }
+
+    function startOfWeek(date) {
+      const copy = startOfDay(date);
+      const day = copy.getDay() || 7;
+      copy.setDate(copy.getDate() - day + 1);
+      return copy;
+    }
+
+    function startOfMonth(date) {
+      const copy = startOfDay(date);
+      copy.setDate(1);
+      return copy;
+    }
+
+    function dateKey(date) {
+      const d = startOfDay(date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+
+    function weekKey(date) {
+      return dateKey(startOfWeek(date));
+    }
+
+    function monthKey(date) {
+      const d = startOfMonth(date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function trendKey(date, period) {
+      if (period === "monthly") return monthKey(date);
+      if (period === "weekly") return weekKey(date);
+      return dateKey(date);
+    }
+
+    function trendBucketLabel(date, period) {
+      if (period === "monthly") return `${date.getFullYear()}/${date.getMonth() + 1}`;
+      if (period === "weekly") return `${date.getMonth() + 1}/${date.getDate()}週`;
+      return `${date.getMonth() + 1}/${date.getDate()}`;
+    }
+
+    function periodLabel(period) {
+      return period === "monthly" ? "每月" : period === "weekly" ? "每週" : "每日";
+    }
+
+    function trendRangeLabel(period) {
+      return period === "monthly" ? "最近 12 個月" : period === "weekly" ? "最近 8 週" : "最近 14 天";
+    }
+
+    function showReport(html) {
+      $("resultBox").classList.add("show");
+      $("resultTitle").textContent = "最近飲料報告";
+      $("resultMeta").textContent = "從這台手機的歷史紀錄開啟。";
+      $("summaryGrid").innerHTML = "";
+      $("impactList").innerHTML = "";
+      $("reportFrame").hidden = false;
+      $("reportFrame").srcdoc = html;
+      $("resultBox").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function downloadCsv() {
+      const records = loadRecords().slice().reverse();
+      if (!records.length) return alert("尚未有紀錄可下載。");
+      const header = records[0].csvHeader;
+      const csv = [header, ...records.map((record) => record.csvRow)].join("\n") + "\n";
+      downloadText(csv, `daily-drinks-${new Date().toISOString().slice(0, 10)}.csv`, "text/csv;charset=utf-8");
+    }
+
+    function clearLocalHistory() {
+      if (!confirm("確定清除這台手機上的所有飲料紀錄？這只會刪除本機資料。")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state.latest = null;
+      renderHistory();
+      $("resultBox").classList.remove("show");
+      showSettingsStatus("已清除這台手機上的本機紀錄。", "warn");
+      showStatus("已清除本機紀錄。", "warn");
+    }
+
+    function downloadText(text, filename, type) {
+      const blob = new Blob(["\ufeff", text], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function loadRecords() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll(".tab").forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
+      document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
+      $(`${tab}View`).classList.add("active");
+      if (tab === "history") renderHistory();
+    }
+
+    function loadTheme() {
+      try { return localStorage.getItem(THEME_KEY) === "blue" ? "blue" : "pink"; }
+      catch { return "pink"; }
+    }
+
+    function applyTheme(theme) {
+      const safeTheme = theme === "blue" ? "blue" : "pink";
+      document.documentElement.dataset.theme = safeTheme;
+      const label = safeTheme === "blue" ? "淺藍" : "粉色";
+      const nextLabel = safeTheme === "blue" ? "粉色" : "淺藍";
+      $("themeLabel").textContent = label;
+      $("themeToggle").setAttribute("aria-label", `切換成${nextLabel}色系`);
+      const themeColor = safeTheme === "blue" ? "#f3fbff" : "#fff2f7";
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
+    }
+
+    function setLoading(isLoading) {
+      $("submitButton").disabled = isLoading;
+      $("submitButton").textContent = isLoading ? "記錄中…" : "記錄";
+    }
+
+    function showStatus(message, tone = "") {
+      const box = $("statusBox");
+      box.className = `status show ${tone}`.trim();
+      box.textContent = message;
+    }
+
+    function showSettingsStatus(message, tone = "") {
+      const box = $("settingsStatus");
+      box.className = `status show ${tone}`.trim();
+      box.textContent = message;
+    }
+
+    function value(number, unit) {
+      return number === null || number === undefined ? "資料不足" : `${number} ${unit}`;
+    }
+
+    function formatTrendNumber(number) {
+      if (!Number.isFinite(number)) return "0";
+      if (Math.abs(number) >= 100) return String(Math.round(number));
+      if (Number.isInteger(number)) return String(number);
+      return String(Math.round(number * 10) / 10);
+    }
+
+    function priceText(price) {
+      if (!price) return "價格未知";
+      if (price.amount !== null && price.amount !== undefined) return `NT$${price.amount}`;
+      if (price.min !== null && price.max !== null) return `NT$${price.min}–${price.max}`;
+      return "價格未知";
+    }
+
+    function confidenceLabel(confidence) {
+      return confidence === "high" ? "高" : confidence === "medium" ? "中" : confidence === "low" ? "低" : "未標示";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      }[char]));
+    }
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
