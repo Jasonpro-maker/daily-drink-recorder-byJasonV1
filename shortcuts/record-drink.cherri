@@ -1,0 +1,66 @@
+#include 'actions/documents'
+#include 'actions/text'
+#include 'actions/web'
+
+#define name 記錄飲料
+#define color green
+
+#question endpoint "輸入 Netlify API 網址（需包含 /api/beverage-lookup）" "https://YOUR-SITE.netlify.app/api/beverage-lookup"
+#question token "輸入捷徑存取權杖 SHORTCUT_ACCESS_TOKEN" "CHANGE-ME"
+
+@apiEndpoint = text(endpoint)
+@accessToken = text(token)
+
+@name = prompt("今天喝了什麼飲料？", "Text", "")
+@brand = prompt("品牌（不知道可留空）", "Text", "")
+@serving = prompt("容量（ml）", "Number", "500")
+@sweetness = prompt("甜度，例如無糖、微糖、半糖、全糖", "Text", "未指定")
+@ice = prompt("冰量，例如去冰、少冰、正常冰", "Text", "未指定")
+@paidPrice = prompt("實付價格（不知道請填 0）", "Number", "0")
+const randomA = randomNumber(10000000, 99999999)
+const randomB = randomNumber(10000000, 99999999)
+@recordId = "{randomA}{randomB}"
+
+@response = jsonRequest(@apiEndpoint, "POST", {
+  "recordId": "{@recordId}",
+  "name": "{@name}",
+  "brand": "{@brand}",
+  "servingMl": "{@serving}",
+  "sweetness": "{@sweetness}",
+  "ice": "{@ice}",
+  "paidPrice": "{@paidPrice}",
+  "accessToken": "{@accessToken}",
+  "locale": "zh-TW"
+})
+const status = getText(@response['status'])
+
+if status == "ready" {
+  @csvHeader = @response['csvHeader']
+  @csvRow = @response['csvRow']
+  @reportHtml = @response['reportHtml']
+  const matchedName = getText(@response['matchedName'])
+  const confidence = getText(@response['confidence'])
+  confirm("辨識為：{matchedName}\n資料可信度：{confidence}\n\n確認後才會寫入 iCloud CSV。", "確認飲料資料")
+
+  const rootFolder = createFolder("每日飲料記錄器")
+  const reportsFolder = createFolder("reports", rootFolder)
+  const existingCsv = getFile("drinks.csv", rootFolder, false)
+  if existingCsv {
+    const exists = containsText("{existingCsv}", "{@recordId}", false)
+    if !exists {
+      const appendedRow = "\n{@csvRow}"
+      appendToFile("每日飲料記錄器/drinks.csv", appendedRow)
+    }
+  } else {
+    const initialCsv = "{@csvHeader}\n{@csvRow}"
+    saveFile("每日飲料記錄器/drinks.csv", initialCsv, false)
+  }
+
+  saveFile("每日飲料記錄器/reports/{@recordId}.html", @reportHtml, true)
+  saveFile("每日飲料記錄器/latest_report.html", @reportHtml, true)
+  const latestReport = getFile("latest_report.html", rootFolder)
+  quicklook(latestReport)
+} else {
+  @message = @response['message']
+  show("{@message}")
+}

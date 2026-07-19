@@ -1,0 +1,533 @@
+/*
+Basic Actions and Global Types
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// [Doc]: Stop Shortcut: Stops the shortcut.
+
+
+// [Doc]: Nothing: Clear the current output.
+
+
+// [Doc]: Comment: Add an explicit comment.
+
+
+// [Doc]: Get Type: Get the type of input.
+
+
+// [Doc]: Get Object of Class: Get the object of `class` from a variable.
+
+
+// [Doc]: [Output] Show Result: Show `input`.
+
+
+// [Doc]: [Output] Quick Look: Preview `input` in Quick Look.
+
+
+// [Doc]: [Output] Stop and Output: Stop and output `output`. Do nothing if there is nowhere to output.
+
+
+// [Doc]: [Output] Output or Copy to Clipboard: Stop and output `output`. Copy to the clipboard if there is nowhere to output.
+
+
+
+
+// [Doc]: [Output] Must Output: Stop and output `output`. Respond with response if there is nowhere to output.
+
+
+
+
+// [Doc]: [Output] Content Graph: Display input as a content graph.
+
+
+
+
+
+
+
+
+
+
+// [Doc]: Count: Returns a count of `type` of items in `input`.
+
+
+// [Doc]: [Notifications] Alert: Shows an alert with text and optional title and an OK button to proceed.
+
+
+
+
+// [Doc]: [Notifications] Confirm: Shows an alert with text and optional title. It displays an OK button to proceed, and a cancel button that stops the Shortcut.
+
+
+
+
+// [Doc]: [Notifications] Show Notification: Shows a custom notification message.
+
+
+
+
+
+
+
+// [Doc]: [Numbers] Number: Create a number value.
+
+
+// [Doc]: [Numbers] Format Number: Format number based on decimal place.
+
+
+// [Doc]: [Numbers] Get Numbers: Get numbers from input.
+
+
+// [Doc]: [Numbers] Random Number: Returns a random number between `min` and `max`.
+
+
+
+
+// [Doc]: [Control Flow] Wait: Wait a specified number of seconds.
+
+
+// [Doc]: [Control Flow] Wait to Return: Wait for the user to return to Shortcuts.
+
+
+// [Doc]: [Search] Search/Spotlight: Get results from search on iOS or iPadOS, and Spotlight on macOS.
+
+
+// [Doc]: [Dictionaries] Get Dictionary: Get the dictionary from `input`.
+
+
+// [Doc]: [Dictionaries] Get Keys from Dictionary: Get only the keys from the `dictionary`.
+
+
+
+
+// [Doc]: [Dictionaries] Get Values from Dictionary: Get only the values from the `dictionary`.
+
+
+
+
+// [Doc]: [Dictionaries] Get Value from Dictionary: For constants only, otherwise `dictionary['key']` syntax should be used.
+
+
+
+
+// [Doc]: [Dictionaries] Set Value in Dictionary: Set the value of `key` to `value` in `dictionary`.
+
+
+// [Doc]: [Items] Get Name: Get the name of an item.
+
+
+// [Doc]: [Items] Set Name: Set the name of an item.
+
+
+// [Doc]: [Lists] Choose from List: Prompts the user to choose from a list.
+
+
+
+
+
+
+
+// [Doc]: [Lists] Get First Item: Get first item in a list.
+
+
+
+
+// [Doc]: [Lists] Get Last Item: Get the last item in a list.
+
+
+
+
+// [Doc]: [Lists] Get Random Item: Get random item from list.
+
+
+
+
+// [Doc]: [Lists] Get List Item: Get item from `list` at `index`. Keep in mind Shortcuts starts counting indexes at 1.
+
+
+
+
+// [Doc]: [Lists] Get List Items: Get items from a `list` between two indexes. Keep in mind Shortcuts starts counting indexes at 1.
+
+
+
+
+
+/*
+Document Actions
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+// [Doc]: [Archives] Make Archive: Create an archive of `files` named `name` in `format`.
+
+
+// [Doc]: [Archives] Extract Archive: Extract files from the archive `file`.
+
+
+// [Doc]: [Books] Add to Books: Add `input` to books. `input` is expected to be a PDF or epub file.
+
+
+// [Doc]: [Editing] Markup: Opens document in a markup editor.
+
+
+// [Doc]: [Files & Folders] Get File Link: Get a link for the provided file.
+
+
+// [Doc]: [Files & Folders] Append File: Append text to a file.
+
+
+
+
+// [Doc]: [Files & Folders] Prepend File: Prepend text to a file.
+
+
+
+
+// [Doc]: [Files & Folders] Create Folder: Create a folder within the Shortcuts folder or within a `#ref` to a folder.
+
+
+// [Doc]: [Files & Folders] Delete Files: Delete a file or multiple files.
+
+
+// [Doc]: [Files & Folders] Select File: Prompt the user to select one or optionally multiple files.
+
+
+// [Doc]: [Files & Folders] Select Folder: Prompt the user to select one or optionally multiple folders.
+
+
+
+
+// [Doc]: [Files & Folders] Get File: Get file from a path in the Shortcuts folder or within a `#ref` to a folder.
+
+
+// [Doc]: [Files & Folders] Open File: Open a file.
+
+
+// [Doc]: [Files & Folders] Get Parent Directory: Get the parent directory of the input directory.
+
+
+// [Doc]: [Files & Folders] File: Insert a `#ref` to a file.
+
+
+
+
+
+
+
+
+
+
+
+// [Doc]: [Files & Folders] Get File Detail: Get a detail about a file.
+
+
+// [Doc]: [Files & Folders] Get Selected
+
+
+// [Doc]: [Files & Folders] Get Folder Contents: Get contents of a folder.
+
+
+// [Doc]: [Files & Folders] Reveal in Finder
+
+
+// [Doc]: [Files & Folders] Rename File
+
+
+// [Doc]: [Files & Folders] Save File Prompt: Prompt the user to choose a location to save the file.
+
+
+// [Doc]: [Files & Folders] Save File: Save contents to a file at the specified path.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// [Doc]: [Files & Folders] File Size: Returns the size of a file.
+
+
+
+
+// [Doc]: [Notes] Open Note: Open note in the Notes app.
+
+
+// [Doc]: [Notes] Append Note: Append text to a note.
+
+
+// [Doc]: [Notes] Show Quick Note: Show quick note.
+
+
+// [Doc]: [Printing] Print: Print input to a printer.
+
+
+
+
+
+
+
+
+
+// [Doc]: [QR Codes] Make QR Code
+
+
+// [Doc]: Convert to USDZ
+
+
+/*
+Web Actions
+*/
+
+// [Doc]: [URLs] Open URL: Open URL in default browser.
+
+
+
+
+// [Doc]: [URLs] Expand URL: Get the expanded version of a URL. For instance, returns the full URL for a short URL, or the URL which a URL immediately redirects to, etc.
+
+
+// [Doc]: [URLs] Get URLs: Get URLs from `input`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+// [Doc]: [URLs] Get URL Detail: Get a detail about a URL.
+
+
+// [Doc]: [URLs] Get URL Headers: Get the headers from a URL.
+
+
+// [Doc]: [URLs] URL Encode: Encode text for a URL.
+
+
+
+
+// [Doc]: [URLs] URL Decode: Decode text from URL encoding.
+
+
+
+
+// [Doc]: [URLs] Open X-Callback URL
+
+
+// [Doc]: [Safari] Get Current URL: Get current URL in Safari.
+
+
+// [Doc]: [Safari] Show Webpage: Show webpage using Safari.
+
+
+// [Doc]: [Safari] Run JavaScript on Webpage: Run some custom JavaScript on the current webpage in Safari.
+
+
+
+
+
+
+
+
+
+// [Doc]: [Safari] Get Webpage Detail: Get a detail about a provided webpage.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// [Doc]: [Safari] Search Web: Search the web using a provided search engine and query.
+
+
+// [Doc]: [Safari] Get Webpage Contents: Get contents of Webpage from Safari.
+
+
+// [Doc]: [Giphy] Get GIFs from Giphy: Gets a number of GIFs from Giphy for a search query.
+
+
+
+
+// [Doc]: [Giphy] Search Giphy: Gets GIFs from Giphy for a search query.
+
+
+// [Doc]: [Articles] Get Article: Get article from webpage.
+
+
+// [Doc]: [Articles] Get Article Detail: Get a detail about an article.
+
+
+// [Doc]: [RSS] Get RSS: Get RSS feed contents at URL. Limited by number of items.
+
+
+// [Doc]: [RSS] Get RSS Feeds: Get feeds from multiple URLs.
+
+
+
+
+
+
+
+
+
+// [Doc]: [HTTP] Download URL: Download the contents of a URL.
+
+
+
+
+// [Doc]: [HTTP] Form Request: Send a `method` request to `url` with `body` and optional `headers.
+
+
+
+
+
+
+
+
+
+// [Doc]: [HTTP] JSON Request: Send a `method` JSON request to `url` with `body` and optional `headers.
+
+
+
+
+
+
+
+
+
+// [Doc]: [HTTP] File Request: Send a `method` file request to `url` with `body` and optional `headers.
+
+
+
+
+
+
+
+
+
+
+#define name 記錄飲料
+#define color green
+
+#question endpoint "輸入 Netlify API 網址（需包含 /api/beverage-lookup）" "https://YOUR-SITE.netlify.app/api/beverage-lookup"
+#question token "輸入捷徑存取權杖 SHORTCUT_ACCESS_TOKEN" "CHANGE-ME"
+
+const apiEndpoint = text(endpoint)
+const accessToken = text(token)
+
+const name = prompt("今天喝了什麼飲料？", "Text", "")
+const brand = prompt("品牌（不知道可留空）", "Text", "")
+const serving = prompt("容量（ml）", "Number", "500")
+const sweetness = prompt("甜度，例如無糖、微糖、半糖、全糖", "Text", "未指定")
+const ice = prompt("冰量，例如去冰、少冰、正常冰", "Text", "未指定")
+const paidPrice = prompt("實付價格（不知道請填 0）", "Number", "0")
+const randomA = randomNumber(10000000, 99999999)
+const randomB = randomNumber(10000000, 99999999)
+const recordId = "{randomA}{randomB}"
+
+const body = {
+  "recordId": recordId,
+  "name": name,
+  "brand": brand,
+  "servingMl": serving,
+  "sweetness": sweetness,
+  "ice": ice,
+  "paidPrice": paidPrice,
+  "locale": "zh-TW"
+}
+const headers = {"Authorization": "Bearer {accessToken}"}
+const response = jsonRequest(apiEndpoint, "POST", body, headers)
+const status = response['status']
+
+if status == "ready" {
+  const csvHeader = response['csvHeader']
+  const csvRow = response['csvRow']
+  const reportHtml = response['reportHtml']
+
+  createFolder("每日飲料記錄器")
+  createFolder("每日飲料記錄器/reports")
+  const existingCsv = getFile("每日飲料記錄器/drinks.csv", , false)
+  if existingCsv {
+    const exists = containsText("{existingCsv}", recordId, false)
+    if !exists {
+      const appendedRow = "\n{csvRow}"
+      appendToFile("每日飲料記錄器/drinks.csv", appendedRow)
+    }
+  } else {
+    const initialCsv = "{csvHeader}\n{csvRow}"
+    saveFile("每日飲料記錄器/drinks.csv", initialCsv, false)
+  }
+
+  saveFile("每日飲料記錄器/reports/{recordId}.html", reportHtml, true)
+  saveFile("每日飲料記錄器/latest_report.html", reportHtml, true)
+  const latestReport = getFile("每日飲料記錄器/latest_report.html")
+  quicklook(latestReport)
+} else {
+  const message = response['message']
+  show("{message}")
+}

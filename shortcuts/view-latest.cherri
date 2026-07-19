@@ -1,0 +1,12 @@
+#include 'actions/documents'
+
+#define name 查看最近飲料報告
+#define color teal
+
+const rootFolder = createFolder("每日飲料記錄器")
+const latestReport = getFile("latest_report.html", rootFolder, false)
+if latestReport {
+  quicklook(latestReport)
+} else {
+  alert("尚未找到報告，請先執行「記錄飲料」。", "每日飲料記錄器")
+}
