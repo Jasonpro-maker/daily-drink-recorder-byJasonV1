@@ -1,5 +1,5 @@
-const CACHE_NAME = "daily-drink-recorder-v16";
-const APP_SHELL = ["./", "./manifest.webmanifest", "./icon.svg", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png"];
+const CACHE_NAME = "daily-drink-recorder-v15";
+const APP_SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
